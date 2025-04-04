@@ -2,8 +2,6 @@ from fastapi import FastAPI, HTTPException
 from database import get_database_connection
 from pydantic import BaseModel
 
-
-
 app= FastAPI();
 
 class User(BaseModel):
@@ -48,6 +46,22 @@ async def delete_user(user_id: int):
 
     if cursor.rowcount == 0:
         raise HTTPException(status_code=404, detail= "User not found")
-
     return {"message": "User Delete Successfully"}
+
+@app.put("/users/{user_id}")
+async def update_user(user_id: int, user:User):
+    connection= get_database_connection()
+    cursor= connection.cursor()
+    query = "UPDATE users SET name = %s, email = %s WHERE id= %s"
+    cursor.execute(query, (user.name, user.email, user_id))
+    connection.commit()
+    if cursor.rowcount == 0:
+        connection.close()
+        raise HTTPException(status_code=404, detail="User not found")
+        return {"message": "User UpDated Successfully"}
+
+
+
+
+
     
